@@ -1,0 +1,18 @@
+This implements the random effects likelihood for ANC HIV prevalence described by
+Alkema, Raftery, Clark Ann Appl Stat 2007 (http://dx.doi.org/10.1214/07-AOAS111).
+This is implemented in the EPP model used by UNAIDS for generating HIV epidemic
+trends: http://www.unaids.org/en/dataanalysis/datatools/spectrumepp2013.
+
+It relies on GNU Scientific Library (GSL) for adapative Gaussian quadrature
+numerical intergration routine (http://www.gnu.org/software/gsl/).
+
+It uses mvrandist code for multivariate normal pdf. At present these are copied
+into the repo, but should revise to include as a submodule when I figure out
+how to do that.
+
+At present there's not a good standalone testing / example script. I'll try to
+add this in the future, along with R implementation of the likelihood. 
+
+GPLv3, no warranty, etc...
+
+Created by Jeff Eaton on 2014-11-12 <jeffrey.eaton@imperial.ac.uk>
