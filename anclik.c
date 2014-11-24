@@ -62,6 +62,8 @@ double anclik(size_t numsites, gsl_vector **dst, gsl_vector **vst, gsl_vector **
   // s2_pr_beta: scale parameter for inverse-gamma prior on variance of clinic-level effects
   // NOTE: mean and sigma are passed as arguments so they can be allocated once and reused if calling anclik many times
 
+  gsl_set_error_handler_off();
+  
   double val, err;
   struct anclik_integrand_param param = {numsites, dst, vst, mean, sigma, s2_pr_alpha, s2_pr_beta};
   gsl_function anclik_integrand_f = {&anclik_integrand, &param};
