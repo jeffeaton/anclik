@@ -4,15 +4,27 @@ This is implemented in the EPP model used by UNAIDS for generating HIV epidemic
 trends: http://www.unaids.org/en/dataanalysis/datatools/spectrumepp2013.
 
 It relies on GNU Scientific Library (GSL) for adapative Gaussian quadrature
-numerical intergration routine (http://www.gnu.org/software/gsl/).
+numerical intergration routine (http://www.gnu.org/software/gsl/). To compile
+the add the flags -lgsl -lgslcblas:
 
-It uses mvrandist code for multivariate normal pdf. At present these are copied
-into the repo, but should revise to include as a submodule when I figure out
-how to do that.
+$ R CMD SHLIB -lgsl -lgslcblas anclikR.c anclik.c mvrandist.c
 
-At present there's not a good standalone testing / example script. I'll try to
-add this in the future, along with R implementation of the likelihood. 
+You may need to supply -L <path to GSL> if not in the PATH variable.
+
+The script "anclik.R" includes a function for preparing ANC data for likelihood
+calculation and a wrapper function for calling the C function. This includes
+an equivalent R implementation of the C code.
+
+The script "example.R" provides an example for preparing the data and
+calling the likelihood, and compares the performance of the C and R
+implementations.
+
+At present, it does not handle the GSL errors, so in this version if an error
+happens in the C code (e.g. pass it a vector of incorrect size), it will crash R.
+Hopefully I’ll improve this in the future. 
+
 
 GPLv3, no warranty, etc...
 
 Created by Jeff Eaton on 2014-11-12 <jeffrey.eaton@imperial.ac.uk>
+Edited by  Jeff Eaton on 2014-11-24

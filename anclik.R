@@ -1,4 +1,5 @@
 dyn.load(paste("anclikR", .Platform$dynlib.ext, sep=""))
+library(mvtnorm) # required for calling fnANClik with VERSION = "R"
 
 fnPrepareANCLikelihoodData <- function(anc.prev, anc.n, anchor.year = 1970L){
     ## anc.prev: matrix with one row for each site and column for each year
