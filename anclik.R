@@ -1,7 +1,8 @@
+system("R CMD SHLIB -lgsl -lgslcblas anclikR.c anclik.c mvrandist.c")
 dyn.load(paste("anclikR", .Platform$dynlib.ext, sep=""))
 library(mvtnorm) # required for calling fnANClik with VERSION = "R"
 
-fnPrepareANCLikelihoodData <- function(anc.prev, anc.n, anchor.year = 1970L){
+fnPrepareANCLikelihoodData <- function(anc.prev, anc.n, anchor.year = 1970L, return.data=TRUE){
     ## anc.prev: matrix with one row for each site and column for each year
     ## anc.n: sample size, matrix with one row for each site and column for each year
     ## anchor.year: year in which annual prevalence output start -- to determine index to compare data
@@ -22,10 +23,18 @@ fnPrepareANCLikelihoodData <- function(anc.prev, anc.n, anchor.year = 1970L){
     v.lst <- mapply(function(W, x, n) 2*pi*exp(W^2)*x*(1-x)/n, W.lst, x.lst, anc.n.lst)
     anc.idx.lst <- lapply(anc.years.lst, "-", anchor.year-1)  ## index of observations relative to output prevalence vector
 
-    return(list(W.lst = W.lst,
-                v.lst = v.lst,
-                anc.idx.lst = anc.idx.lst))
-}
+
+    anclik.dat <- list(W.lst = W.lst,
+                       v.lst = v.lst,
+                       anc.idx.lst = anc.idx.lst)
+    
+    if(return.data){ ## Return the data matrices in the list (for convenience)
+      anclik.dat$anc.prev <- anc.prev
+      anclik.dat$anc.n <- anc.n
+    }
+
+    return(anclik.dat)
+  }
 
 fnANClik <- function(qM, anclik.dat, s2.pr.alpha = 0.58, s2.pr.beta = 93, VERSION="C"){
     ## qM: vector of probit-transformed annual prevalences (starting in anchor.year specified for anclik.dat)
