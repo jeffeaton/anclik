@@ -1,3 +1,4 @@
+
 system("R CMD SHLIB -lgsl -lgslcblas anclikR.c anclik.c mvrandist.c")
 dyn.load(paste("anclikR", .Platform$dynlib.ext, sep=""))
 library(mvtnorm) # required for calling fnANClik with VERSION = "R"
@@ -26,6 +27,7 @@ fnPrepareANCLikelihoodData <- function(anc.prev, anc.n, anchor.year = 1970L, ret
 
     anclik.dat <- list(W.lst = W.lst,
                        v.lst = v.lst,
+                       n.lst = anc.n.lst,
                        anc.idx.lst = anc.idx.lst)
     
     if(return.data){ ## Return the data matrices in the list (for convenience)
@@ -51,4 +53,48 @@ fnANClik <- function(qM, anclik.dat, s2.pr.alpha = 0.58, s2.pr.beta = 93, VERSIO
     }
     
     return(.Call("anclikR", d.lst, anclik.dat$v.lst, s2.pr.alpha, s2.pr.beta))
+}
+
+
+
+sample.b.one <- function(d, v, s2.pr.alpha = 0.58, s2.pr.beta = 93){
+  ## Use rejection sampling to sample clinic level effect (Alkema, Raftery, Clark 2007)
+  ## p(b.s | M, W.s) \propto N( d.st, v.st) * (b.s^2/2 + 1/beta2)^(-alpha-1/2)
+  ## 1) sample from normal distribution with weighted mean and variance
+  ## 2) reject based on second term of product
+  
+  max.val <- (1/s2.pr.beta)^(-s2.pr.alpha-0.5)  # maximized when b=0, to normalize rejection sampling
+  b <- Inf
+  while(runif(1) > (0.5*b^2 + 1/s2.pr.beta)^(-s2.pr.alpha-0.5) / max.val)
+    b <- rnorm(1, sum(d/v)/sum(1/v), 1/sum(1/v))
+  return(b)
+}
+
+sample.b.site <- function(qM, anclik.dat, s2.pr.alpha = 0.58, s2.pr.beta = 93){
+  ## Sample b.s values for all clinics
+  ## parameters defined the same as fnANClik
+  
+  d.lst <- mapply(function(w, idx) w - qM[idx], anclik.dat$W.lst, anclik.dat$anc.idx.lst)
+  return(mapply(sample.b.one, d.lst, anclik.dat$v.lst, s2.pr.alpha, s2.pr.beta))
+}
+
+
+sample.pred.site <- function(qM, b.site, anclik.dat, v.infl=0){
+  ## Sample predicted prevalences in the same years as observed ANC prevalences in each site
+
+  ## qM: vector of probit-transformed annual prevalences (starting in anchor.year specified for anclik.dat)
+  ## b.site: vector of site-level random effects
+  ## v.infl: additive variance term to (tranformed) binomial variance
+  ## Note: b.site must be drawn from same posterior sample as qM (b.site | qM)!!!
+
+  ## site-level fitted values
+  fit.site <- mapply(function(b, idx) qM[idx] + b, b.site, anclik.dat$anc.idx.lst)
+
+  ## variance fitted values
+  vpred.site <- mapply(function(pred, n) 2*pi*exp(pred^2)*pnorm(pred)*(1-pnorm(pred)) / n + v.infl, fit.site, anclik.dat$n.lst)
+
+  ## predicted values (probit scale)
+  pred.site <- mapply(rnorm, sapply(fit.site, length), fit.site, lapply(vpred.site, sqrt))
+  
+  return(lapply(pred.site, pnorm)) # natural scale
 }
