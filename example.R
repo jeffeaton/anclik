@@ -64,3 +64,11 @@ library(microbenchmark)
 
 microbenchmark(fnANClik(qM + ancbias, bw.urban.anclikdat),
                fnANClik(qM + ancbias, bw.urban.anclikdat, VERSION="R"))
+
+
+
+## Sample site-level random effects
+b.site <- sample.b.site(qM + ancbias, bw.urban.anclikdat)
+
+## Sample from clinic posterior predictive distribution
+pred.site <- sample.pred.site(qM + ancbias, b.site, bw.urban.anclikdat)
