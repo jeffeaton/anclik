@@ -46,7 +46,7 @@ fnANClik <- function(qM, anclik.dat, v.infl=0, s2.pr.alpha = 0.58, s2.pr.beta = 
     ## s2.pr.alpha: parameter for inverse-gamma prior on ANC site-level effects
     ## s2.pr.beta: parameter for inverse-gamma prior on ANC site-level effects
     
-    d.lst <- mapply(function(w, idx) w - qM[idx], anclik.dat$W.lst, anclik.dat$anc.idx.lst)
+    d.lst <- mapply(function(w, idx) w - qM[idx], anclik.dat$W.lst, anclik.dat$anc.idx.lst, SIMPLIFY=FALSE)
     v.lst <- lapply(anclik.dat$v.lst, "+", v.infl)
 
     if(VERSION == "R"){
