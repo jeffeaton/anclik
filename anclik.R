@@ -1,5 +1,6 @@
+if(!file.exists(paste("anclikR", .Platform$dynlib.ext, sep="")))
+  system("R CMD SHLIB -lgsl -lgslcblas anclikR.c anclik.c mvrandist.c")
 
-system("R CMD SHLIB -lgsl -lgslcblas anclikR.c anclik.c mvrandist.c")
 dyn.load(paste("anclikR", .Platform$dynlib.ext, sep=""))
 library(mvtnorm) # required for calling fnANClik with VERSION = "R"
 
@@ -38,21 +39,23 @@ fnPrepareANCLikelihoodData <- function(anc.prev, anc.n, anchor.year = 1970L, ret
     return(anclik.dat)
   }
 
-fnANClik <- function(qM, anclik.dat, s2.pr.alpha = 0.58, s2.pr.beta = 93, VERSION="C"){
+fnANClik <- function(qM, anclik.dat, v.infl=0, s2.pr.alpha = 0.58, s2.pr.beta = 93, VERSION="C"){
     ## qM: vector of probit-transformed annual prevalences (starting in anchor.year specified for anclik.dat)
     ## anclik.dat: list including transformed ANC prevalence data
+    ## v.infl: additional variance for ANC prevalence observation
     ## s2.pr.alpha: parameter for inverse-gamma prior on ANC site-level effects
     ## s2.pr.beta: parameter for inverse-gamma prior on ANC site-level effects
     
     d.lst <- mapply(function(w, idx) w - qM[idx], anclik.dat$W.lst, anclik.dat$anc.idx.lst)
+    v.lst <- lapply(anclik.dat$v.lst, "+", v.infl)
 
     if(VERSION == "R"){
-        V.lst <- lapply(anclik.dat$v.lst, function(x) diag(x, nrow=length(x)))
+        V.lst <- lapply(v.lst, function(x) diag(x, nrow=length(x)))
         return(integrate(Vectorize(function(s2)
                                    exp(sum(mapply(dmvnorm, x=d.lst, sigma = lapply(V.lst, function(m) s2+m), MoreArgs=list(log=TRUE))))*s2^(-s2.pr.alpha-1)*exp(-1/(s2.pr.beta*s2))), 1e-15, 0.3, subdivisions=1000, stop.on.error=FALSE)$value)
     }
     
-    return(.Call("anclikR", d.lst, anclik.dat$v.lst, s2.pr.alpha, s2.pr.beta))
+    return(.Call("anclikR", d.lst, v.lst, s2.pr.alpha, s2.pr.beta))
 }
 
 
@@ -76,6 +79,22 @@ sample.b.site <- function(qM, anclik.dat, s2.pr.alpha = 0.58, s2.pr.beta = 93){
   
   d.lst <- mapply(function(w, idx) w - qM[idx], anclik.dat$W.lst, anclik.dat$anc.idx.lst)
   return(mapply(sample.b.one, d.lst, anclik.dat$v.lst, s2.pr.alpha, s2.pr.beta))
+}
+
+sample.sigma2 <- function(b.site, s2.pr.alpha = 0.58, s2.pr.beta = 93){
+  ## Sample from posterior for variance of clinic random effects, conditional
+  ## on sample of random effect values.
+  
+  ## b.site = matrix of b.site values (S x nsample)
+  ## Note: scale parameterization, b0 = 1/s2.pr.beta
+  ## p(sigma2 | b[1:S], a0, b0) ~ InvGamma(a0 + S/2, b0 + sum(b^2)/2)
+
+  if(is.vector(b.site))
+    b.site <- matrix(b.site)
+  nsample <- ncol(b.site)
+  nsites <- nrow(b.site)
+  sigma2 <- 1/rgamma(nsample, shape = s2.pr.alpha+nsites/2, rate = 1/s2.pr.beta+colSums(b.site^2)/2)
+  return(sigma2)
 }
 
 
