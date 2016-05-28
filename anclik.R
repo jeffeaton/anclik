@@ -77,7 +77,7 @@ sample.b.site <- function(qM, anclik.dat, s2.pr.alpha = 0.58, s2.pr.beta = 93){
   ## Sample b.s values for all clinics
   ## parameters defined the same as fnANClik
   
-  d.lst <- mapply(function(w, idx) w - qM[idx], anclik.dat$W.lst, anclik.dat$anc.idx.lst)
+  d.lst <- mapply(function(w, idx) w - qM[idx], anclik.dat$W.lst, anclik.dat$anc.idx.lst, SIMPLIFY=FALSE)
   return(mapply(sample.b.one, d.lst, anclik.dat$v.lst, s2.pr.alpha, s2.pr.beta))
 }
 
@@ -107,13 +107,13 @@ sample.pred.site <- function(qM, b.site, anclik.dat, v.infl=0){
   ## Note: b.site must be drawn from same posterior sample as qM (b.site | qM)!!!
 
   ## site-level fitted values
-  fit.site <- mapply(function(b, idx) qM[idx] + b, b.site, anclik.dat$anc.idx.lst)
+  fit.site <- mapply(function(b, idx) qM[idx] + b, b.site, anclik.dat$anc.idx.lst, SIMPLIFY=FALSE)
 
   ## variance fitted values
-  vpred.site <- mapply(function(pred, n) 2*pi*exp(pred^2)*pnorm(pred)*(1-pnorm(pred)) / n + v.infl, fit.site, anclik.dat$n.lst)
+  vpred.site <- mapply(function(pred, n) 2*pi*exp(pred^2)*pnorm(pred)*(1-pnorm(pred)) / n + v.infl, fit.site, anclik.dat$n.lst, SIMPLIFY=FALSE)
 
   ## predicted values (probit scale)
-  pred.site <- mapply(rnorm, sapply(fit.site, length), fit.site, lapply(vpred.site, sqrt))
+  pred.site <- mapply(rnorm, sapply(fit.site, length), fit.site, lapply(vpred.site, sqrt), SIMPLIFY=FALSE)
   
   return(lapply(pred.site, pnorm)) # natural scale
 }
