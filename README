@@ -3,13 +3,9 @@ Alkema, Raftery, Clark Ann Appl Stat 2007 (http://dx.doi.org/10.1214/07-AOAS111)
 This is implemented in the EPP model used by UNAIDS for generating HIV epidemic
 trends: http://www.unaids.org/en/dataanalysis/datatools/spectrumepp2013.
 
-It relies on GNU Scientific Library (GSL) for adapative Gaussian quadrature
-numerical intergration routine (http://www.gnu.org/software/gsl/). To compile
-the add the flags -lgsl -lgslcblas:
+To compile the C code version into a shared library object, run the command:
 
-$ R CMD SHLIB -lgsl -lgslcblas anclikR.c anclik.c mvrandist.c
-
-You may need to supply -L <path to GSL> if not in the PATH variable.
+$ R CMD SHLIB anclikR.c 
 
 The script "anclik.R" includes a function for preparing ANC data for likelihood
 calculation and a wrapper function for calling the C function. This includes
@@ -18,6 +14,16 @@ an equivalent R implementation of the C code.
 The script "example.R" provides an example for preparing the data and
 calling the likelihood, and compares the performance of the C and R
 implementations.
+
+
+The initial implementation relied on GNU Scientific Library (GSL) for
+adapative Gaussian quadrature numerical intergration routine
+(http://www.gnu.org/software/gsl/). This deprecated version is retained in
+"anclikR_gsl.c". To compile that version add the flags -lgsl -lgslcblas:
+
+$ R CMD SHLIB -lgsl -lgslcblas anclikR_gsl.c anclik.c mvrandist.c
+
+You may need to supply -L <path to GSL> if not in the PATH variable.
 
 At present, it does not handle the GSL errors, so in this version if an error
 happens in the C code (e.g. pass it a vector of incorrect size), it will crash R.
@@ -28,3 +34,4 @@ GPLv3, no warranty, etc...
 
 Created by Jeff Eaton on 2014-11-12 <jeffrey.eaton@imperial.ac.uk>
 Edited by  Jeff Eaton on 2014-11-24
+Edited by  Jeff Eaton on 2016-05-29: Remove dependency on GSL

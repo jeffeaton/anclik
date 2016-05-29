@@ -1,7 +1,7 @@
-if(!file.exists(paste("anclikR", .Platform$dynlib.ext, sep="")))
-  system("R CMD SHLIB -lgsl -lgslcblas anclikR.c anclik.c mvrandist.c")
+if(!file.exists(paste0("anclikR", .Platform$dynlib.ext)))
+  system("R CMD SHLIB anclikR.c")
 
-dyn.load(paste("anclikR", .Platform$dynlib.ext, sep=""))
+dyn.load(paste0("anclikR", .Platform$dynlib.ext))
 library(mvtnorm) # required for calling fnANClik with VERSION = "R"
 
 fnPrepareANCLikelihoodData <- function(anc.prev, anc.n, anchor.year = 1970L, return.data=TRUE){
