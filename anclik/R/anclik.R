@@ -1,9 +1,3 @@
-if(!file.exists(paste0("anclikR", .Platform$dynlib.ext)))
-  system("R CMD SHLIB anclikR.c")
-
-dyn.load(paste0("anclikR", .Platform$dynlib.ext))
-library(mvtnorm) # required for calling fnANClik with VERSION = "R"
-
 fnPrepareANCLikelihoodData <- function(anc.prev, anc.n, anchor.year = 1970L, return.data=TRUE){
     ## anc.prev: matrix with one row for each site and column for each year
     ## anc.n: sample size, matrix with one row for each site and column for each year
@@ -49,13 +43,15 @@ fnANClik <- function(qM, anclik.dat, v.infl=0, s2.pr.alpha = 0.58, s2.pr.beta = 
     d.lst <- mapply(function(w, idx) w - qM[idx], anclik.dat$W.lst, anclik.dat$anc.idx.lst, SIMPLIFY=FALSE)
     v.lst <- lapply(anclik.dat$v.lst, "+", v.infl)
 
-    if(VERSION == "R"){
-        V.lst <- lapply(v.lst, function(x) diag(x, nrow=length(x)))
-        return(integrate(Vectorize(function(s2)
-                                   exp(sum(mapply(dmvnorm, x=d.lst, sigma = lapply(V.lst, function(m) s2+m), MoreArgs=list(log=TRUE))))*s2^(-s2.pr.alpha-1)*exp(-1/(s2.pr.beta*s2))), 1e-15, 0.3, subdivisions=1000, stop.on.error=FALSE)$value)
-    }
-    
-    return(.Call("anclikR", d.lst, v.lst, s2.pr.alpha, s2.pr.beta))
+  if(VERSION == "R"){
+     if (!requireNamespace("mvtnorm", quietly = TRUE))
+       stop("Package mvtnorm needed to call R version of fnANClik.", call. = FALSE)
+     V.lst <- lapply(v.lst, function(x) diag(x, nrow=length(x)))
+     return(integrate(Vectorize(function(s2)
+       exp(sum(mapply(mvtnorm::dmvnorm, x=d.lst, sigma = lapply(V.lst, function(m) s2+m), MoreArgs=list(log=TRUE))))*s2^(-s2.pr.alpha-1)*exp(-1/(s2.pr.beta*s2))), 1e-15, 0.3, subdivisions=1000, stop.on.error=FALSE)$value)
+  }
+  
+  return(.Call("anclikR", d.lst, v.lst, s2.pr.alpha, s2.pr.beta, PACKAGE="anclik"))
 }
 
 

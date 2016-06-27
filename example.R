@@ -48,7 +48,7 @@ ancbias <- 0.2637549
 #############################################
 
 ## Load likelihood functions
-source("anclik.R")
+library(anclik)
 
 ## Prepare data for likelihood calculation
 bw.urban.anclikdat <- fnPrepareANCLikelihoodData(bw.urban.anc.prev, bw.urban.anc.n, anchor.year=1970L)
