@@ -6,7 +6,7 @@ trends: http://www.unaids.org/en/dataanalysis/datatools/spectrumepp2013.
 The code is implemeted as an R package in the subdirectory anclik/. To install the
 R package using devtools:
 
-> devtools::install_github("jeffeaton/anclik/anclik/")
+> devtools::install_github("jeffeaton/anclik/anclik")
 
 
 The script "R/anclik.R" includes a function for preparing ANC data for likelihood
