@@ -1,9 +1,12 @@
-fnPrepareANCLikelihoodData <- function(anc.prev, anc.n, anchor.year = 1970L, return.data=TRUE){
+fnPrepareANCLikelihoodData <- function(anc.prev, anc.n, anc.used = TRUE, anchor.year = 1970L, return.data=TRUE){
     ## anc.prev: matrix with one row for each site and column for each year
     ## anc.n: sample size, matrix with one row for each site and column for each year
     ## anchor.year: year in which annual prevalence output start -- to determine index to compare data
     ## NOTE: requires year to be stored in column names of anc.prev
 
+    anc.prev <- anc.prev[anc.used,]  # keep only used sites
+    anc.n <- anc.n[anc.used,]        # keep only used sites
+  
     anc.prev <- anc.prev[apply(!is.na(anc.prev), 1, sum) > 0,] # eliminate records with no observations
     anc.n <- anc.n[apply(!is.na(anc.n), 1, sum) > 0,] # eliminate records with no observations
 
