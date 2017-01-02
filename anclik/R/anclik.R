@@ -4,11 +4,11 @@ fnPrepareANCLikelihoodData <- function(anc.prev, anc.n, anc.used = TRUE, anchor.
     ## anchor.year: year in which annual prevalence output start -- to determine index to compare data
     ## NOTE: requires year to be stored in column names of anc.prev
 
-    anc.prev <- anc.prev[anc.used,]  # keep only used sites
-    anc.n <- anc.n[anc.used,]        # keep only used sites
+    anc.prev <- anc.prev[anc.used,,drop=FALSE]  # keep only used sites
+    anc.n <- anc.n[anc.used,,drop=FALSE]        # keep only used sites
   
-    anc.prev <- anc.prev[apply(!is.na(anc.prev), 1, sum) > 0,] # eliminate records with no observations
-    anc.n <- anc.n[apply(!is.na(anc.n), 1, sum) > 0,] # eliminate records with no observations
+    anc.prev <- anc.prev[apply(!is.na(anc.prev), 1, sum) > 0,,drop=FALSE] # eliminate records with no observations
+    anc.n <- anc.n[apply(!is.na(anc.n), 1, sum) > 0,,drop=FALSE] # eliminate records with no observations
 
     ancobs.idx <- mapply(intersect, lapply(as.data.frame(t(!is.na(anc.prev))), which),
                          lapply(as.data.frame(t(!is.na(anc.n))), which), SIMPLIFY=FALSE)

@@ -1,6 +1,6 @@
 Package: anclik
 Title: Likelihood for ANC Sentinel Surveillance Data
-Version: 0.1
+Version: 0.2
 Authors@R: person("Jeff", "Eaton", email = "jeffrey.eaton@imperial.ac.uk", role = c("aut", "cre"))
 Description: This implements the random effects likelihood for ANC HIV prevalence described by Alkema, Raftery, Clark Ann Appl Stat 2007 (http://dx.doi.org/10.1214/07-AOAS111). This is implemented in the EPP model used by UNAIDS for generating HIV epidemic trends: http://www.unaids.org/en/dataanalysis/datatools/spectrumepp2013.
 Depends: R (>= 3.1.0)
