@@ -47,6 +47,19 @@ fnANClik <- function(qM, anclik.dat, v.infl=0, s2.pr.alpha = 0.58, s2.pr.beta = 
     d.lst <- mapply(function(w, idx) w - qM[idx], anclik.dat$W.lst, anclik.dat$anc.idx.lst, SIMPLIFY=FALSE)
     v.lst <- lapply(anclik.dat$v.lst, "+", v.infl)
 
+  anc_resid_lik(d.lst, v.lst, s2.pr.alpha, s2.pr.beta, VERSION)
+}
+
+#' Likelihood for integrated ANC likelihood on residuals. (Alkema, Raftery, Clark equation 10)
+#'
+#' @param d.lst residuals of observed ANC prevalence compared to predicted
+#' @param v.lst approximated variance for each ANC observation
+#' @param s2.pr.alpha parameter for inverse-gamma prior on ANC site-level effects
+#' @param s2.pr.beta parameter for inverse-gamma prior on ANC site-level effects
+#' @param VERSION flag for evaluating C or R implementation of likelihood (for debugging)
+#' @return integrated ANC likelihood (double)
+anc_resid_lik <- function(d.lst, v.lst, s2.pr.alpha=0.58, s2.pr.beta=93, VERSION="C"){
+
   if(VERSION == "R"){
      if (!requireNamespace("mvtnorm", quietly = TRUE))
        stop("Package mvtnorm needed to call R version of fnANClik.", call. = FALSE)
@@ -57,6 +70,7 @@ fnANClik <- function(qM, anclik.dat, v.infl=0, s2.pr.alpha = 0.58, s2.pr.beta = 
   
   return(.Call("anclikR", d.lst, v.lst, s2.pr.alpha, s2.pr.beta, PACKAGE="anclik"))
 }
+  
 
 
 
