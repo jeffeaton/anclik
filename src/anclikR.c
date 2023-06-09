@@ -1,6 +1,6 @@
 /******************************************************************************************
  *
- *  Creates wrapper function to call anclik from R. Likelihood based on 
+ *  Creates wrapper function to call anclik from R. Likelihood based on
  *  Alkema, Raftery, Clark Ann Appl Stat 2007. (http://dx.doi.org/10.1214/07-AOAS111)
  *
  *  GPLv3, no warranty, etc...
@@ -71,7 +71,7 @@ SEXP anclikR(SEXP s_dst, SEXP s_vst, SEXP s_s2_pr_alpha, SEXP s_s2_pr_beta){
   int lenw = 4 * limit;
   int *iwork = (int *) R_alloc(limit, sizeof(int));
   double *work = (double *) R_alloc(lenw,  sizeof(double));
- 
+
   Rdqags(anclik_integrand, &param, &a, &b, &epsabs, &epsrel,
          REAL(s_val), &err, &neval, &ier, &limit, &lenw, &last, iwork, work);
 
@@ -90,9 +90,9 @@ double ldmvnorm(int n, double *x, double *mean, double *sigma){
   // x = x - mean
   for(int i=0; i<n; i++)
     x[i] = x[i] - mean[i];
-  
-  F77_NAME(dpotrf)("U", &n, sigma, &n, &info); // chol(sigma);
-  F77_NAME(dtrsv)("U", "T", "N", &n, sigma, &n, x, &inc); // inv(L) %*% (x-mean)
+
+  F77_NAME(dpotrf)("U", &n, sigma, &n, &info FCONE); // chol(sigma);
+  F77_NAME(dtrsv)("U", "T", "N", &n, sigma, &n, x, &inc FCONE FCONE FCONE); // inv(L) %*% (x-mean)
   double rss = F77_NAME(ddot)(&n, x, &inc, x, &inc); // (x-mean) %*% inv(sigma) %*% (x-mean)
 
   double logsqrtdet = 0.0;
@@ -102,7 +102,7 @@ double ldmvnorm(int n, double *x, double *mean, double *sigma){
   return -logsqrtdet - n*M_LN_SQRT_2PI - 0.5*rss;
 }
 
-// likelihood integrand 
+// likelihood integrand
 void anclik_integrand(double *val, int n, void * params){
 
   struct anclik_integrand_param *p = (struct anclik_integrand_param *) params;
